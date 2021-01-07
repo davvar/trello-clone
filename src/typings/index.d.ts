@@ -26,8 +26,17 @@ interface AppStateContextProps {
 type Action =
 	| { type: 'ADD_LIST'; payload: string }
 	| { type: 'ADD_TASK'; payload: { text: string; listId: string } }
-	| { type: 'MOVE_LIST'; payload: { dragIndex: number; hoverIndex: number } }
 	| { type: 'SET_DRAGGED_ITEM'; payload: DragItem | undefined }
+	| { type: 'MOVE_LIST'; payload: { dragIndex: number; hoverIndex: number } }
+	| {
+			type: 'MOVE_TASK'
+			payload: {
+				dragIndex: number
+				hoverIndex: number
+				sourceColumn: string
+				targetColumn: string
+			}
+	  }
 
 interface Item {
 	id: string
@@ -41,12 +50,14 @@ type ColumnDragItem = {
 }
 
 type CardDragItem = {
+	index: number
 	id: string
+	columnId: string
 	text: string
 	type: 'CARD'
 }
 
-type DragItem = ColumnDragItem
+type DragItem = ColumnDragItem | CardDragItem
 
 interface DragPreviewContainerProps {
 	isHidden?: boolean

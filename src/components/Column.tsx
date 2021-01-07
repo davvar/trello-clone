@@ -17,7 +17,7 @@ export const Column: FC<IProps> = ({ text, index, id, isPreview }) => {
 	const ref = useRef<HTMLDivElement>(null)
 
 	const [, drop] = useDrop({
-		accept: 'COLUMN',
+		accept: ['COLUMN', 'CARD'],
 		hover(item: DragItem) {
 			if (item.type === 'COLUMN') {
 				const dragIndex = item.index
@@ -29,6 +29,23 @@ export const Column: FC<IProps> = ({ text, index, id, isPreview }) => {
 
 				dispatch({ type: 'MOVE_LIST', payload: { dragIndex, hoverIndex } })
 				item.index = hoverIndex
+			} else {
+				const dragIndex = item.index
+				const hoverIndex = 0
+				const sourceColumn = item.columnId
+				const targetColumn = id
+
+				if (sourceColumn === targetColumn) {
+					return
+				}
+
+				dispatch({
+					type: 'MOVE_TASK',
+					payload: { dragIndex, hoverIndex, sourceColumn, targetColumn },
+				})
+
+				item.index = hoverIndex
+				item.columnId = targetColumn
 			}
 		},
 	})
@@ -45,7 +62,13 @@ export const Column: FC<IProps> = ({ text, index, id, isPreview }) => {
 		>
 			<ColumnTitle>{text}</ColumnTitle>
 			{state.lists[index].tasks.map((task, i) => (
-				<Card text={task.text} key={task.id} index={i} />
+				<Card
+					id={task.id}
+					columnId={id}
+					text={task.text}
+					key={task.id}
+					index={i}
+				/>
 			))}
 			<AddNewItem
 				toggleButtonText='+ Add another task'

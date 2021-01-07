@@ -3,8 +3,10 @@ import { FC, useReducer } from 'react';
 import { AppStateContext } from './hooks';
 import {
 	findItemIndexById,
+	insertItemAtIndex,
 	moveItem,
-	overrideItemAtIndex
+	overrideItemAtIndex,
+	removeItemAtIndex
 } from './utils/arrayUtils';
 
 const appData: AppState = {
@@ -69,6 +71,51 @@ const appStateReducer = (state: AppState, action: Action): AppState => {
 		case 'MOVE_LIST': {
 			const { dragIndex, hoverIndex } = action.payload
 			return { ...state, lists: moveItem(state.lists, dragIndex, hoverIndex) }
+		}
+
+		case 'MOVE_TASK': {
+			const {
+				dragIndex,
+				hoverIndex,
+				sourceColumn,
+				targetColumn,
+			} = action.payload
+
+			const sourceListIndex = findItemIndexById(state.lists, sourceColumn)
+			const targetListIndex = findItemIndexById(state.lists, targetColumn)
+
+			const sourceList = state.lists[sourceListIndex]
+			const task = sourceList.tasks[dragIndex]
+
+			const updatedSourceList = {
+				...sourceList,
+				tasks: removeItemAtIndex(sourceList.tasks, dragIndex),
+			}
+
+			const stateWithUpdatedSourceList = {
+				...state,
+				lists: overrideItemAtIndex(
+					state.lists,
+					updatedSourceList,
+					sourceListIndex
+				),
+			}
+
+			const targetList = stateWithUpdatedSourceList.lists[targetListIndex]
+
+			const updatedTargetList = {
+				...targetList,
+				tasks: insertItemAtIndex(targetList.tasks, task, hoverIndex),
+			}
+
+			return {
+				...stateWithUpdatedSourceList,
+				lists: overrideItemAtIndex(
+					stateWithUpdatedSourceList.lists,
+					updatedTargetList,
+					targetListIndex
+				),
+			}
 		}
 
 		case 'SET_DRAGGED_ITEM': {

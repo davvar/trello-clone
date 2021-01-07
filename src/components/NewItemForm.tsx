@@ -1,10 +1,6 @@
 import React, { useState } from 'react';
-import { useFocus } from '../hooks/useFocus';
+import { useFocus } from '../hooks';
 import { NewItemButton, NewItemFormContainer, NewItemInput } from '../styles';
-
-interface NewItemFormProps {
-	onAdd(text: string): void
-}
 
 export const NewItemForm = ({ onAdd }: NewItemFormProps) => {
 	const [text, setText] = useState('')

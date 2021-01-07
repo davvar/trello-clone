@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
+import { NewItemForm } from '.';
 import { AddItemButton } from '../styles';
-import { NewItemForm } from './NewItemForm';
 
 interface IProps {
 	onAdd: (text: string) => void

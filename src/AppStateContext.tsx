@@ -1,19 +1,11 @@
-import { createContext, FC } from 'react';
-
-interface Task {
-	id: string
-	text: string
-}
-
-interface List {
-	id: string
-	text: string
-	tasks: Task[]
-}
-
-export interface AppState {
-	lists: List[]
-}
+import { nanoid } from 'nanoid';
+import { FC, useReducer } from 'react';
+import { AppStateContext } from './hooks';
+import {
+	findItemIndexById,
+	moveItem,
+	overrideItemAtIndex
+} from './utils/arrayUtils';
 
 const appData: AppState = {
 	lists: [
@@ -33,18 +25,68 @@ const appData: AppState = {
 			tasks: [{ id: 'c3', text: 'Begin to use static typing' }],
 		},
 	],
+	draggedItem: undefined,
 }
 
-interface AppStateContextProps {
-	state: AppState
+const appStateReducer = (state: AppState, action: Action): AppState => {
+	switch (action.type) {
+		case 'ADD_LIST': {
+			return {
+				...state,
+				lists: [
+					...state.lists,
+					{ id: nanoid(), tasks: [], text: action.payload },
+				],
+			}
+		}
+
+		case 'ADD_TASK': {
+			const targetListIndex = findItemIndexById(
+				state.lists,
+				action.payload.listId
+			)
+
+			const targetList = state.lists[targetListIndex]
+
+			const updatedTargetList = {
+				...targetList,
+				tasks: [
+					...targetList.tasks,
+					{ id: nanoid(), text: action.payload.text },
+				],
+			}
+
+			return {
+				...state,
+				lists: overrideItemAtIndex(
+					state.lists,
+					updatedTargetList,
+					targetListIndex
+				),
+			}
+		}
+
+		case 'MOVE_LIST': {
+			const { dragIndex, hoverIndex } = action.payload
+			return { ...state, lists: moveItem(state.lists, dragIndex, hoverIndex) }
+		}
+
+		case 'SET_DRAGGED_ITEM': {
+			return { ...state, draggedItem: action.payload }
+		}
+
+		default: {
+			return state
+		}
+	}
 }
 
-const AppStateContext = createContext<AppStateContextProps>(
-	{} as AppStateContextProps
-)
+export const AppStateProvider: FC = ({ children }) => {
+	const [state, dispatch] = useReducer(appStateReducer, appData)
 
-export const AppStateProvider: FC = ({ children }) => (
-	<AppStateContext.Provider value={{ state: appData }}>
-		{children}
-	</AppStateContext.Provider>
-)
+	return (
+		<AppStateContext.Provider value={{ state, dispatch }}>
+			{children}
+		</AppStateContext.Provider>
+	)
+}

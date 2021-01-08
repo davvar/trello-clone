@@ -1,5 +1,7 @@
 import { nanoid } from 'nanoid';
-import { FC, useReducer } from 'react';
+import { FC, useEffect, useReducer } from 'react';
+import { save } from './api';
+import { withData } from './hocs/withData';
 import { AppStateContext } from './hooks';
 import {
 	findItemIndexById,
@@ -8,27 +10,6 @@ import {
 	overrideItemAtIndex,
 	removeItemAtIndex
 } from './utils/arrayUtils';
-
-const appData: AppState = {
-	lists: [
-		{
-			id: '0',
-			text: 'To Do',
-			tasks: [{ id: 'c0', text: 'Generate app scaffold' }],
-		},
-		{
-			id: '1',
-			text: 'In Progress',
-			tasks: [{ id: 'c2', text: 'Learn Typescript' }],
-		},
-		{
-			id: '2',
-			text: 'Done',
-			tasks: [{ id: 'c3', text: 'Begin to use static typing' }],
-		},
-	],
-	draggedItem: undefined,
-}
 
 const appStateReducer = (state: AppState, action: Action): AppState => {
 	switch (action.type) {
@@ -128,12 +109,16 @@ const appStateReducer = (state: AppState, action: Action): AppState => {
 	}
 }
 
-export const AppStateProvider: FC = ({ children }) => {
-	const [state, dispatch] = useReducer(appStateReducer, appData)
+export const AppStateProvider: FC = withData(({ children, initialState }) => {
+	const [state, dispatch] = useReducer(appStateReducer, initialState)
+
+	useEffect(() => {
+		save(state)
+	}, [state])
 
 	return (
 		<AppStateContext.Provider value={{ state, dispatch }}>
 			{children}
 		</AppStateContext.Provider>
 	)
-}
+})

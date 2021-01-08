@@ -1,6 +1,6 @@
-import express from "express"
-import cors from 'cors'
-import bodyParser from 'body-parser'
+import bodyParser from 'body-parser';
+import cors from 'cors';
+import express from "express";
 
 const app = express()
 
@@ -20,5 +20,5 @@ app.post("/save", (req, res) => {
 app.get("/load", (req, res) => res.json({ lists }))
 
 app.listen(port, () =>
-  console.log(`Kanban backend running on http://localhost:${port}!`)
+  console.log(`🚀 running  on http://localhost:${port}!`)
 )
